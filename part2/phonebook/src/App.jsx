@@ -1,56 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
+import Filter from './components/Filter'
 import Notification from './components/Notification'
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
 import personsService from './services/persons'
-
-const Filter = ({ filter, onFilterChange }) => {
-  return (
-    <div>
-      filter shown with <input onChange={onFilterChange} value={filter} />
-    </div>
-  )
-}
-
-const PersonForm = ({
-  onSubmit,
-  onNameChange,
-  newName,
-  onPhoneNumberChange,
-  newPhoneNumber
-}) => {
-  return (
-    <form onSubmit={onSubmit}>
-      <div>
-        name: <input onChange={onNameChange} value={newName} />
-      </div>
-      <div>
-        number: <input onChange={onPhoneNumberChange} value={newPhoneNumber} />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  )
-}
-
-const Persons = ({ persons, onDelete }) => {
-  return (
-    <>
-      {persons.map(person => (
-        <div key={person.name}>
-          {person.name} {person.number} <button onClick={() => onDelete(person.id)}>delete</button>
-        </div>
-      ))}
-    </>
-  )
-}
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newPhoneNumber, setNewPhoneNumber] = useState('')
   const [filter, setFilter] = useState('')
-  const [notification, setNotification] = useState('')
-  const [notificationClassName, setNotificationClassName] = useState('')
+  const [notification, setNotification] = useState({ message: null })
 
   const timer = useRef(null);
 
@@ -67,9 +27,17 @@ const App = () => {
     }
   }, [])
 
-  const clearNotification = () => {
-    setNotification('')
-    setNotificationClassName('')
+  const showNotification = (message, isError = false) => {
+    clearInterval(timer.current)
+    setNotification({ message, className: isError ? 'error notification' : 'success notification' })
+    timer.current = setTimeout(() => {
+      setNotification({ message: null })
+    }, 5000)
+  }
+
+  const clearForm = () => {
+    setNewName('')
+    setNewPhoneNumber('')
   }
 
   const handleSubmit = (e) => {
@@ -82,24 +50,13 @@ const App = () => {
         personsService
           .update(person.id, newPerson)
           .then(returnedPerson => {
-            clearInterval(timer.current)
             setPersons(persons.map(p => p.id === person.id ? returnedPerson : p))
-            setNewName("")
-            setNewPhoneNumber("")
-            setNotification(`Updated ${returnedPerson.name}'s number to ${returnedPerson.number}`)
-            setNotificationClassName('success notification')
-            timer.current = setTimeout(() => {
-              clearNotification()
-            }, 5000)
+            clearForm()
+            showNotification(`Updated ${returnedPerson.name}'s number to ${returnedPerson.number}`)
           })
           .catch(err => {
-            clearInterval(timer.current)
             setPersons(persons.filter(p => p.id !== person.id))
-            setNotification(`Information of ${person.name} has already been removed from server`)
-            setNotificationClassName('error notification')
-            timer.current = setTimeout(() => {
-              clearNotification()
-            }, 5000)
+            showNotification(`Information of ${person.name} has already been removed from server`, true)
           })
       }
       return
@@ -108,15 +65,9 @@ const App = () => {
     personsService
       .create({ name: newName, number: newPhoneNumber })
       .then(returnedPerson => {
-        clearInterval(timer.current)
         setPersons(persons.concat(returnedPerson))
-        setNewName("")
-        setNewPhoneNumber("")
-        setNotification(`Added ${returnedPerson.name}`)
-        setNotificationClassName('success notification')
-        timer.current = setTimeout(() => {
-          clearNotification()
-        }, 5000)
+        clearForm()
+        showNotification(`Added ${returnedPerson.name}`)
       })
   }
 
@@ -139,8 +90,6 @@ const App = () => {
         .remove(id)
 
       setPersons(persons.filter(p => p.id !== id))
-      clearInterval(timer.current)
-      clearNotification()
     }
   }
 
@@ -149,7 +98,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      {notification !== '' && <Notification className={notificationClassName} message={notification} />}
+      <Notification notification={notification} />
       <Filter filter={filter} onFilterChange={handleFilterChange} />
       <h2>Add a new</h2>
       <PersonForm

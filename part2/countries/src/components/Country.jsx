@@ -1,6 +1,6 @@
 import Weather from './Weather'
 
-const Country = ({ country, weather }) => {
+const Country = ({ country }) => {
   return (
     <div>
       <h1>{country.name.common}</h1>
@@ -13,7 +13,7 @@ const Country = ({ country, weather }) => {
         {Object.entries(country.languages).map(([key, lng]) => <li key={key}>{lng}</li>)}
       </ul>}
       <img src={country.flags.png} alt={country.flags.alt} />
-      {weather && <Weather location={country.capital ? country.capital[0] : country.name.common} data={weather} />}
+      <Weather country={country} />
     </div>
   )
 }

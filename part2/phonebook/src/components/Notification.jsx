@@ -1,4 +1,6 @@
-const Notification = ({ className, message }) => {
+const Notification = ({ notification }) => {
+  const { message, className } = notification
+  
   if (message === null) {
     return null
   }
