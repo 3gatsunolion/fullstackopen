@@ -54,9 +54,22 @@ const App = () => {
             clearForm()
             showNotification(`Updated ${returnedPerson.name}'s number to ${returnedPerson.number}`)
           })
-          .catch(err => {
-            setPersons(persons.filter(p => p.id !== person.id))
-            showNotification(`Information of ${person.name} has already been removed from server`, true)
+          .catch(error => {
+            if (error.response) {
+              // The request was made and the server responded with a status code
+              // that falls out of the range of 2xx
+              if (error.response.status === 400) {
+                // User error (validation failed)
+                showNotification(error.response.data.error, true)
+                return
+              } else if (error.response.status === 404) {
+                // User deleted in server
+                setPersons(persons.filter(p => p.id !== person.id))
+                showNotification(`Information of ${person.name} has already been removed from server`, true)
+                return
+              }
+            }
+            showNotification(`Oops, something went wrong! Try again.`, true)
           })
       }
       return
@@ -68,6 +81,9 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         clearForm()
         showNotification(`Added ${returnedPerson.name}`)
+      })
+      .catch(error => {
+        showNotification(error.response.data.error, true)
       })
   }
 
