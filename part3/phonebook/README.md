@@ -33,6 +33,8 @@ https://fullstackopen-vmyy.onrender.com
 ## Running the App Locally
 
 ```bash
+cd backend
+
 # Install dependencies
 npm install
 
