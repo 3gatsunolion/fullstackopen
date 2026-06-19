@@ -2,6 +2,13 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 
+// Whenever Express gets an HTTP GET request it will first check if the dist directory contains
+// a file corresponding to the request's address. If a correct file is found, Express will return it.
+// If there is an index.html file in dist directory, HTTP GET requests to the address www.serversaddress.com/index.html or
+// www.serversaddress.com will serve it.
+// GET requests to the address www.serversaddress.com/api/persons will be handled by the backend code.
+app.use(express.static('dist'))
+
 app.use(express.json())
 
 morgan.token('post-body', (req) => {
