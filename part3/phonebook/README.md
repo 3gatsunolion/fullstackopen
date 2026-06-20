@@ -33,10 +33,10 @@ https://fullstackopen-vmyy.onrender.com
 ## Running the App Locally
 
 ```bash
-cd backend
+$ cd backend
 
 # Install dependencies
-npm install
+$ npm install
 
 # Build frontend assets
 $ npm run build:ui
