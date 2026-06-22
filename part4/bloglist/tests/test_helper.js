@@ -69,6 +69,7 @@ const sampleUsers = [
   {
     _id: '6a36f4659faa0fa20d4593ca',
     username: 'helloworld',
+    name: 'Sunshine',
     password: 'iamasecret',
     blogs: ['5a422bc61b54a676234d17fc', '5a422b891b54a676234d17fa', '5a422b3a1b54a676234d17f9'],
     __v: 0

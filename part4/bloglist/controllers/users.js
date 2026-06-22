@@ -8,7 +8,7 @@ usersRouter.get('/', async (request, response) => {
   // Mongoose first queries the users collection for the list of users, and then queries the collection
   // corresponding to the model object specified by the ref property in the users schema for data with the given object id.
   const users = await User
-    .find({}).populate('blogs', { author: 1, title: 1, url: 1 })
+    .find({}).populate('blogs', { author: 1, title: 1, url: 1, id: 1 })
 
   response.json(users)
 })

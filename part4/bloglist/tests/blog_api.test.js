@@ -245,7 +245,7 @@ describe('when there is initially some blogs saved', () => {
   })
 
   describe('modification of a blog', () => {
-    test('succeeds with status code 200 if id is valid', async () => {
+    test('all fields will be updated if id is valid', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToModify = blogsAtStart[0]
 
@@ -260,6 +260,7 @@ describe('when there is initially some blogs saved', () => {
       const blogsAtEnd = await helper.blogsInDb()
 
       const savedModifiedBlog = blogsAtEnd.find(blog => blog.id === blogToModify.id)
+
       assert.deepStrictEqual(savedModifiedBlog, blogToModify)
 
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
