@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link,
+  useNavigate, useMatch
+} from 'react-router-dom'
+import { Container, AppBar, Toolbar, Box, Button, Typography } from '@mui/material'
 import Blog from './components/Blog'
+import BlogList from './components/BlogList'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
@@ -12,10 +19,16 @@ const LOGIN_LOCAL_STORAGE_KEY = 'loggedBlogappUser'
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState({ message: null })
+  const [notification, setNotification] = useState(null)
 
   const timer = useRef(null)
-  const blogFormTogglable = useRef(null)
+
+  const navigate = useNavigate()
+  const match = useMatch('/blogs/:id')
+
+  const blogToDisplay = match
+    ? blogs.find(b => b.id === match.params.id)
+    : null
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -42,15 +55,15 @@ const App = () => {
 
   const showNotification = (message, isError = false) => {
     clearInterval(timer.current)
-    setNotification({ message, isError })
+    setNotification({ text: message, type: isError ? 'error' : 'success' })
     setTimeout(() => {
-      setNotification({ message: null })
+      setNotification(null)
     }, 5000)
   }
 
   const clearNotification = () => {
     clearInterval(timer.current)
-    setNotification({ message: null })
+    setNotification(null)
   }
 
   const handleLogin = async (credentials) => {
@@ -62,6 +75,7 @@ const App = () => {
       blogService.setToken(verifiedUser.token)
       clearNotification()
       setUser(verifiedUser)
+      navigate('/')
     } catch {
       showNotification('wrong username or password', true)
     }
@@ -72,6 +86,7 @@ const App = () => {
     window.localStorage.removeItem(LOGIN_LOCAL_STORAGE_KEY)
     setUser(null)
     blogService.setToken(null)
+    navigate('/')
   }
 
   const addBlog = async (newBlog) => {
@@ -79,6 +94,7 @@ const App = () => {
       const addedBlog = await blogService.create(newBlog)
       updateBlogs(blogs.concat(addedBlog))
       showNotification(`a new blog: ${addedBlog.title} by ${addedBlog.author} added`)
+      navigate('/')
       return true
     } catch (error) {
       handleError(error)
@@ -90,6 +106,7 @@ const App = () => {
     try {
       await blogService.remove(blog.id)
       updateBlogs(blogs.filter(b => b.id !== blog.id))
+      navigate('/')
     } catch (error) {
       handleError(error)
     }
@@ -139,29 +156,37 @@ const App = () => {
     }
   }
 
-  if (user === null) {
-    return (
-      <div>
-        <h2>log in to application</h2>
-        {notification.message && <Notification notification={notification} />}
-        <LoginForm onLogin={handleLogin} />
-      </div>
-    )
-  }
+  const style = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
 
   return (
-    <div>
-      <h2>blogs</h2>
-      {notification.message && <Notification notification={notification} />}
-      <div>{user.username} logged in <button onClick={logout}>logout</button></div>
-      <Togglable buttonLabel="create new blog" ref={blogFormTogglable}>
-        <h2>create new</h2>
-        <BlogForm createBlog={addBlog} />
-      </Togglable>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} currUser={user} onLike={addLike} onDelete={deleteBlog} />
-      )}
-    </div>
+    <Container>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography color="inherit" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, fontSize: '1.2rem' }}>
+            Blog App
+          </Typography>
+          <Box sx={{ display: { sm: 'block' } }}>
+            <Button color="inherit" component={Link} to="/" sx={style}>blogs</Button>
+            {user && <Button color="inherit" component={Link} to="/create" sx={style}>new blog</Button>}
+            {user ?
+              <Button color="inherit" onClick={logout} sx={style}>logout</Button> :
+              <Button color="inherit" component={Link} to="/login" sx={style}>login</Button>
+            }
+          </Box>
+        </Toolbar>
+      </AppBar>
+      {notification && <Notification notification={notification} />}
+      <Routes>
+        <Route path="/" element={<BlogList blogs={blogs} />} />
+        <Route path="/blogs/:id" element={
+          <Blog blog={blogToDisplay} currUser={user} onLike={addLike} onDelete={deleteBlog} />
+        } />
+        <Route path="/create" element={<BlogForm createBlog={addBlog} />} />
+        <Route path="/login" element={
+          <LoginForm onLogin={handleLogin}/>
+        } />
+      </Routes>
+    </Container>
   )
 }
 

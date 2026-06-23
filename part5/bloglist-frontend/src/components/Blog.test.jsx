@@ -15,41 +15,57 @@ describe('<Blog />', () => {
     }
   }
 
-  const user = { username: 'myusername' }
+  const blogUser = { username: 'myusername' }
+  const otherUser = { usename: 'otheruser' }
   const mockOnLike = vi.fn()
   const mockOnDelete = vi.fn()
 
-  beforeEach(() => {
+  test('when not authenticated, blog information is displayed but buttons are not', () => {
     render(
-      <Blog blog={blog} currUser={user} onLike={mockOnLike} onDelete={mockOnDelete} />
+      <Blog blog={blog} currUser={null} onLike={mockOnLike} onDelete={mockOnDelete} />
     )
-  })
 
-  test('at start blog\'s title and author are displayed, but URL and number of likes are not rendered', () => {
     // default text match: { exact: true }
-    expect(screen.getByText(`${blog.title} ${blog.author}`)).toBeVisible()
+    expect(screen.getByText(blog.title)).toBeVisible()
+    expect(screen.getByText(`by ${blog.author}`)).toBeVisible()
+    expect(screen.getByText(blog.url)).toBeVisible()
+    expect(screen.getByText(`Added by ${blog.user.name || blog.user.username}`)).toBeVisible()
+    expect(screen.getByText(`${blog.likes} ${blog.likes === 1 ? 'like' : 'likes'}`)).toBeVisible()
 
-    expect(screen.queryByText(blog.url)).toBeNull()
-
-    expect(screen.queryByText((_, element) => element.textContent === `${blog.likes} like`)).toBeNull()
+    expect(screen.queryByRole('button', { name: 'like' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'remove' })).toBeNull()
+    // expect(screen.queryByText((_, element) => element.textContent === `${blog.likes} like`)).toBeNull()
   })
 
-  test('after clicking the `view` button, URL and number of likes are shown', async () => {
-    const user = userEvent.setup()
-    const showButton = screen.getByText('view')
-    await user.click(showButton)
+  describe('when authenticated', () => {
+    test('users who are not the blog’s creator are shown only the like button', () => {
+      render(
+        <Blog blog={blog} currUser={otherUser} onLike={mockOnLike} onDelete={mockOnDelete} />
+      )
 
-    expect(screen.queryByText(blog.url)).toBeVisible()
-    expect(screen.queryByText((_, element) => element.textContent === `${blog.likes} like`)).toBeVisible()
-  })
+      expect(screen.getByRole('button', { name: 'like' })).toBeVisible()
+      expect(screen.queryByRole('button', { name: 'remove' })).toBeNull()
+    })
 
-  test('clicking the like button twice calls event handler twice', async () => {
-    const user = userEvent.setup()
-    const showButton = screen.getByText('view')
-    await user.click(showButton)
+    test('the blog’s creator is shown both the like and the delete button', async () => {
+      render(
+        <Blog blog={blog} currUser={blogUser} onLike={mockOnLike} onDelete={mockOnDelete} />
+      )
 
-    const likeButton = screen.getByRole('button', { name: /^like$/i })
-    await user.dblClick(likeButton)
-    expect(mockOnLike.mock.calls).toHaveLength(2)
+      expect(screen.getByRole('button', { name: 'like' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'remove' })).toBeVisible()
+    })
+
+    test('clicking the like button twice calls event handler twice', async () => {
+      render(
+        <Blog blog={blog} currUser={blogUser} onLike={mockOnLike} onDelete={mockOnDelete} />
+      )
+
+      const user = userEvent.setup()
+
+      const likeButton = screen.getByRole('button', { name: /^like$/i })
+      await user.dblClick(likeButton)
+      expect(mockOnLike.mock.calls).toHaveLength(2)
+    })
   })
 })

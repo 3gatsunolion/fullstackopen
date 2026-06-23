@@ -27,13 +27,14 @@ describe('Blog app', () => {
     await page.goto('/')
   })
 
-  test('Login form is shown', async ({ page }) => {
-    await expect(page.getByText('log in to application')).toBeVisible()
-    await expect(page.getByLabel('username')).toBeVisible()
-    await expect(page.getByLabel('password')).toBeVisible()
-  })
-
   describe('Login', () => {
+    test('form is shown when you navigate to /login', async ({ page }) => {
+      await page.goto('/login')
+      await expect(page.getByText('log in to application')).toBeVisible()
+      await expect(page.getByRole('textbox', { name: 'username' })).toBeVisible()
+      await expect(page.getByRole('textbox', { name: 'password' })).toBeVisible()
+    })
+
     test('succeeds with correct credentials', async ({ page }) => {
       // NOTE: Playwright also offers a solution where the login is performed once before the tests,
       // and each test starts from a state where the application is already logged in.
@@ -41,19 +42,22 @@ describe('Blog app', () => {
       // should be done a bit differently than now. In the current solution, the database is reset before each test,
       // and because of this, logging in just once before the tests is impossible. In order for us to use the pre-test
       // login provided by Playwright, the user should be initialized only once before the tests.
+      await expect(page.getByText('new blog')).not.toBeVisible()
       await loginWith(page, loginUser.username, loginUser.password)
-      await expect(page.getByText(`${loginUser.username} logged in`)).toBeVisible()
+      // Should redirect to home page
+      await expect(page).toHaveURL('/')
+      await expect(page.getByText('login')).not.toBeVisible()
+      await expect(page.getByText('new blog')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'logout' })).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
       await loginWith(page, 'wrongusername', 'wrongpassword')
 
-      const errorDiv = page.getByTestId('notification')
-      await expect(errorDiv).toContainText('wrong username or password')
-      await expect(errorDiv).toHaveCSS('border-style', 'solid')
-      await expect(errorDiv).toHaveCSS('color', 'rgb(255, 0, 0)')
-
-      await expect(page.getByText(`${loginUser.username} logged in`)).not.toBeVisible()
+      // Locate the MUI Alert error
+      await expect(page.getByRole('alert').filter({ hasText: 'wrong username or password' })).toBeVisible()
+      await expect(page.getByText('new blog')).not.toBeVisible()
+      await expect(page.getByRole('button', { name: 'logout' })).not.toBeVisible()
     })
   })
 
@@ -78,11 +82,12 @@ describe('Blog app', () => {
 
     beforeEach(async ({ page }) => {
       await loginWith(page, loginUser.username, loginUser.password)
+      await page.waitForURL('/')
     })
 
     test('a new blog can be created', async ({ page }) => {
       await createBlog(page, blogs[0])
-      await expect(page.getByText(`${blogs[0].title} ${blogs[0].author}`)).toBeVisible()
+      await expect(page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` })).toBeVisible()
     })
 
     describe('and a blog is created', () => {
@@ -91,30 +96,32 @@ describe('Blog app', () => {
       })
 
       test('user can like the blog', async ({ page }) => {
-        await page.getByRole('button', { name: 'view' }).click()
+        await page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` }).click()
         // Default 0 likes
-        await expect(page.getByText('0')).toBeVisible()
+        await expect(page.getByText('0 likes')).toBeVisible()
         await page.getByRole('button', { name: 'like' }).click()
-        await expect(page.getByText('1')).toBeVisible()
+        await expect(page.getByText('1 like')).toBeVisible()
       })
 
       test('user (who added the blog) can delete the blog', async ({ page }) => {
         // Register the listener so playwright will accept deletion dialog
         page.on('dialog', dialog => dialog.accept())
 
-        const blogToDelete = page.getByText(`${blogs[0].title} ${blogs[0].author}`)
+        await page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` }).click()
 
-        await page.getByRole('button', { name: 'view' }).click()
         await page.getByRole('button', { name: 'remove' }).click()
 
-        await expect(blogToDelete).toHaveCount(0)
+        // Should redirect to home page
+        await expect(page).toHaveURL('/')
+        await expect(page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` })).toHaveCount(0)
       })
 
       test('delete button of blog cannot be seen by any user who did not add the blog', async ({ page }) => {
         await page.getByRole('button', { name: 'logout' }).click()
         await loginWith(page, otherUser.username, otherUser.password)
 
-        await page.getByRole('button', { name: 'view' }).click()
+        await page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` }).click()
+        await expect(page.getByRole('button', { name: 'like' })).toBeVisible()
         await expect(page.getByRole('button', { name: 'remove' })).toHaveCount(0)
       })
     })
@@ -132,16 +139,25 @@ describe('Blog app', () => {
 
         for (let i = 0; i < blogs.length; i++) {
           const text = `${blogs[i].title} ${blogs[i].author}`
-          await page.getByText(text).getByRole('button', { name: 'view' }).click()
+          await page.getByRole('link', { name: `${blogs[i].title} by ${blogs[i].author}` }).click()
+          await expect(page.getByRole('button', { name: 'like' })).toBeVisible()
 
           for (let j = 0; j < likeCounts[i]; j++) {
-            await page.getByText(text).locator('..').getByRole('button', { name: 'like' }).click()
-            await expect(page.getByText(text).locator('..').getByText(`${j + 1}`)).toBeVisible()
+            // await page.getByText(text).locator('..').getByRole('button', { name: 'like' }).click()
+            await page.getByRole('button', { name: 'like' }).click()
+            await expect(page.getByText(`${j + 1} ${j + 1 === 1 ? 'like' : 'likes'}`)).toBeVisible()
           }
+
+          await page.goto('/')
         }
 
-        for (const [i, blogElement] of (await page.locator('.blog').all()).entries()) {
-          await expect(blogElement.getByText(`${likeCounts.length - i - 1}`)).toBeVisible()
+        await expect(page.getByRole('link', { name: `${blogs[0].title} by ${blogs[0].author}` })).toBeVisible()
+
+        const blogEls = await page.getByTestId('bloglist').locator('> *').all()
+
+        const newOrder = [1, 2, 0]
+        for (const [i, blogElement] of blogEls.entries()) {
+          await expect(blogElement.getByRole('link', { name: `${blogs[newOrder[i]].title} by ${blogs[newOrder[i]].author}` })).toBeVisible()
         }
       })
     })

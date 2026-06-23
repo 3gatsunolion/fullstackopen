@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Input, TextField, Button, Stack } from '@mui/material'
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
@@ -19,43 +20,42 @@ const BlogForm = ({ createBlog }) => {
     }
   }
 
+  const style = { width: '400px' }
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>
-          title
-          <input
-            type="text"
+    <div>
+      <h2>create new</h2>
+      <form onSubmit={handleSubmit}>
+        <Stack spacing={2}>
+          <TextField
+            label="title"
+            size="small"
+            sx={style}
             value={title}
             onChange={({ target }) => setTitle(target.value)}
-            placeholder='enter title'
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          author
-          <input
-            type="text"
+          <TextField
+            label="author"
+            size="small"
+            sx={style}
             value={author}
             onChange={({ target }) => setAuthor(target.value)}
-            placeholder='enter author'
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          url
-          <input
-            type="text"
+          <TextField
+            label="url"
+            size="small"
+            sx={style}
             value={url}
             onChange={({ target }) => setURL(target.value)}
-            placeholder='enter url'
           />
-        </label>
-      </div>
-      <button type="submit">create</button>
-    </form>
+          <div>
+            <Button type="submit" variant="contained">
+              create
+            </Button>
+          </div>
+        </Stack>
+      </form>
+    </div>
   )
 }
 

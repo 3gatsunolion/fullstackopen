@@ -16,5 +16,13 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './testSetup.js',
+    alias: {
+      'react-transition-group/TransitionGroupContext': 'react-transition-group/esm/TransitionGroupContext.js',
+    },
+    server: {
+      deps: {
+        inline: [/./],
+      },
+    },
   }
 })

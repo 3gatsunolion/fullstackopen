@@ -10,8 +10,8 @@ describe('<BlogForm />', () => {
     render(<BlogForm createBlog={mockCreateBlog} />)
 
     const titleInput = screen.getByLabelText('title')
-    const authorInput = screen.getByPlaceholderText('enter author')
-    const urlInput = screen.getByPlaceholderText('enter url')
+    const authorInput = screen.getByLabelText('author')
+    const urlInput = screen.getByLabelText('url')
     const sendButton = screen.getByText('create')
 
     const newBlog = {
