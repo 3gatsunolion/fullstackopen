@@ -162,7 +162,7 @@ const App = () => {
     <Container>
       <AppBar position="static">
         <Toolbar>
-          <Typography color="inherit" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, fontSize: '1.2rem' }}>
+          <Typography variant="h6" color="inherit" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
             Blog App
           </Typography>
           <Box sx={{ display: { sm: 'block' } }}>

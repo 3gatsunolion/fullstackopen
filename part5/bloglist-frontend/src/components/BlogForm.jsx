@@ -20,31 +20,26 @@ const BlogForm = ({ createBlog }) => {
     }
   }
 
-  const style = { width: '400px' }
-
   return (
     <div>
       <h2>create new</h2>
       <form onSubmit={handleSubmit}>
-        <Stack spacing={2}>
+        <Stack spacing={2} sx={{ maxWidth: 400 }}>
           <TextField
             label="title"
             size="small"
-            sx={style}
             value={title}
             onChange={({ target }) => setTitle(target.value)}
           />
           <TextField
             label="author"
             size="small"
-            sx={style}
             value={author}
             onChange={({ target }) => setAuthor(target.value)}
           />
           <TextField
             label="url"
             size="small"
-            sx={style}
             value={url}
             onChange={({ target }) => setURL(target.value)}
           />

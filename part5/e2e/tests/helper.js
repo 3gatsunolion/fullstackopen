@@ -17,4 +17,14 @@ const createBlog = async (page, blog) => {
   await page.getByRole('link', { name: `${blog.title} by ${blog.author}` }).waitFor()
 }
 
-export { loginWith, createBlog }
+const likeTimes = async (page, button, n) => {
+  for (let i = 0; i < n; i++) {
+    await button.click()
+    await button
+      .locator('..')
+      .getByText(`${i + 1} ${i + 1 === 1 ? 'like' : 'likes'}`)
+      .waitFor()
+  }
+}
+
+export { loginWith, createBlog, likeTimes }

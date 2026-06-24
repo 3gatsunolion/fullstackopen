@@ -19,7 +19,7 @@ const Blog = ({ blog, currUser, onLike, onDelete }) => {
           <Typography sx={{ color: 'text.secondary', mt: 1 }}>
             by {blog.author}
           </Typography>
-          <Link href={blog.url} color="primary">
+          <Link href={blog.url} target="_blank" rel="noopener" color="primary">
             {blog.url}
           </Link>
           {
