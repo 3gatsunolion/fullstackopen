@@ -1,0 +1,15 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "npm run build && NODE_ENV=production npm start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
