@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useParams } from "react-router-dom";
-import { useBlogs } from "./useBlogs";
+import {
+  useBlog,
+  useLikeBlog,
+  useDeleteBlog,
+  useCommentBlog,
+} from "./useBlogs";
 import * as currentUserStore from "../auth/useCurrentUser";
 import Blog from "./Blog";
 
@@ -11,7 +16,10 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("./useBlogs", () => ({
-  useBlogs: vi.fn(),
+  useBlog: vi.fn(),
+  useLikeBlog: vi.fn(),
+  useDeleteBlog: vi.fn(),
+  useCommentBlog: vi.fn(),
 }));
 
 const blog = {
@@ -31,21 +39,33 @@ const blog = {
 const blogUser = { username: "myusername" };
 const otherUser = { usename: "otheruser" };
 const mockOnLike = vi.fn();
-// const mockOnDelete = vi.fn();
+const mockOnDelete = vi.fn();
+const mockOnComment = vi.fn();
 
 describe("<Blog />", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useLikeBlog).mockReturnValue({
+      likeBlog: mockOnLike,
+    });
+    vi.mocked(useDeleteBlog).mockReturnValue({
+      deleteBlog: mockOnDelete,
+    });
+    vi.mocked(useCommentBlog).mockReturnValue({
+      comment: mockOnComment,
+    });
   });
 
   test("shows loading when blogs are not yet initialized/fetched", () => {
     vi.mocked(useParams).mockReturnValue({ id: blog.id });
 
-    vi.mocked(useBlogs).mockReturnValue({
-      blogs: [],
+    vi.mocked(useBlog).mockReturnValue({
+      blog: [],
       isPending: true,
     });
 
+    // const { debug } = render(<Blog />);
+    // debug();
     render(<Blog />);
 
     expect(screen.getByText("Loading...")).toBeInTheDocument();
@@ -54,8 +74,10 @@ describe("<Blog />", () => {
   test("shows NotFound when blog does not exist", () => {
     vi.mocked(useParams).mockReturnValue({ id: "1" });
 
-    vi.mocked(useBlogs).mockReturnValue({
-      blogs: [{ id: "999", title: "other" }],
+    vi.mocked(useBlog).mockReturnValue({
+      blog: null,
+      isPending: false,
+      isError: true,
     });
 
     render(<Blog />);
@@ -67,8 +89,8 @@ describe("<Blog />", () => {
 
   test("when not authenticated, blog information is displayed but buttons are not", () => {
     vi.mocked(useParams).mockReturnValue({ id: blog.id });
-    vi.mocked(useBlogs).mockReturnValue({
-      blogs: [blog],
+    vi.mocked(useBlog).mockReturnValue({
+      blog,
     });
 
     render(<Blog />);
@@ -91,11 +113,6 @@ describe("<Blog />", () => {
   describe("when authenticated", () => {
     beforeEach(() => {
       vi.mocked(useParams).mockReturnValue({ id: blog.id });
-      // vi.spyOn(blogStore, "useBlogs").mockReturnValue([blog]);
-      vi.mocked(useBlogs).mockReturnValue({
-        blogs: [blog],
-        likeBlog: mockOnLike,
-      });
     });
 
     test("users who are not the blog’s creator are shown only the like button", () => {

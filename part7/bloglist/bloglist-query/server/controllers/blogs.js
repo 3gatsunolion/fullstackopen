@@ -13,7 +13,11 @@ blogsRouter.get("/", async (request, response) => {
 // Note: When using async/await syntax, Express will automatically call the error-handling middleware
 // if an await statement throws an error or the awaited promise is rejected, so no need for calling next(error)
 blogsRouter.get("/:id", async (request, response) => {
-  const blog = await Blog.findById(request.params.id);
+  const blog = await Blog.findById(request.params.id).populate("user", {
+    username: 1,
+    name: 1,
+    id: 1,
+  });
   if (blog) {
     response.json(blog);
   } else {

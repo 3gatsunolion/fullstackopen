@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useBlogs } from "./useBlogs";
+import { useBlogs, useCreateBlog } from "./useBlogs";
 import BlogForm from "./BlogForm";
 
 vi.mock("react-router-dom", () => ({
@@ -9,6 +9,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("./useBlogs", () => ({
   useBlogs: vi.fn(),
+  useCreateBlog: vi.fn(),
 }));
 
 describe("<BlogForm />", () => {
@@ -20,10 +21,10 @@ describe("<BlogForm />", () => {
       blogs: [],
       isPending: false,
       isError: false,
-      likeBlog: vi.fn(),
-      deleteBlog: vi.fn(),
+    });
+
+    vi.mocked(useCreateBlog).mockReturnValue({
       createBlog: mockCreateBlog,
-      comment: vi.fn(),
     });
 
     render(<BlogForm />);

@@ -1,12 +1,12 @@
 import { Box, Button, Typography, TextField } from "@mui/material";
 import NotFound from "../../components/NotFound";
 import useField from "../../hooks/useField";
-import { useBlogs } from "./useBlogs";
+import { useCommentBlog } from "./useBlogs";
 
 const BlogCommentSection = ({ blog }) => {
   const { reset, ...comment } = useField("text");
 
-  const { comment: commentBlog } = useBlogs();
+  const { comment: commentBlog } = useCommentBlog();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

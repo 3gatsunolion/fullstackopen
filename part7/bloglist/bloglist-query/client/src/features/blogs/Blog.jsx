@@ -11,21 +11,21 @@ import NotFound from "../../components/NotFound";
 import BlogCommentSection from "./BlogCommentSection";
 import { useParams } from "react-router-dom";
 import { useCurrentUser } from "../auth/useCurrentUser";
-import { useBlogs } from "./useBlogs";
+import { useBlog, useLikeBlog, useDeleteBlog } from "./useBlogs";
 
 const Blog = () => {
   const { id } = useParams();
 
   const currUser = useCurrentUser();
-  const { blogs, isPending, isError, likeBlog, deleteBlog } = useBlogs();
+  const { blog, isPending, isError } = useBlog(id);
+  const { likeBlog } = useLikeBlog();
+  const { deleteBlog } = useDeleteBlog();
 
   if (isPending) {
     return <h2>Loading...</h2>;
   }
 
-  const blog = blogs.find((b) => b.id === id);
-
-  if (isError || !blog) {
+  if (isError) {
     return <NotFound />;
   }
 

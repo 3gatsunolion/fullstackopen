@@ -1,13 +1,13 @@
 import { Input, TextField, Button, Stack } from "@mui/material";
 import useField from "../../hooks/useField";
-import { useBlogs } from "./useBlogs";
+import { useCreateBlog } from "./useBlogs";
 
 const BlogForm = () => {
   const { reset: _rt, ...title } = useField("text");
   const { reset: _ra, ...author } = useField("text");
   const { reset: _ru, ...url } = useField("text");
 
-  const { createBlog } = useBlogs();
+  const { createBlog } = useCreateBlog();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
