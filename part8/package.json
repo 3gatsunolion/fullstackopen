@@ -1,0 +1,13 @@
+{
+  "name": "bookapp",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix library-backend\" \"npm run dev --prefix library-frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
