@@ -21,23 +21,23 @@ jobs:
           node-version: 24
 
       - name: Install library-backend dependencies
-        working-directory: library-backend
+        working-directory: part8/library-backend
         run: npm ci
 
       - name: Install library-frontend dependencies
-        working-directory: library-frontend
+        working-directory: part8/library-frontend
         run: npm ci
 
       - name: Install E2E test dependencies
-        working-directory: tests-chapter5
+        working-directory: part8/tests-chapter5
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: tests-chapter5
+        working-directory: part8/tests-chapter5
         run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests
-        working-directory: tests-chapter5
+        working-directory: part8/tests-chapter5
         run: npx playwright test
 
       - name: Upload test report
@@ -45,5 +45,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: tests-chapter5/playwright-report/
+          path: part8/tests-chapter5/playwright-report/
           retention-days: 7
